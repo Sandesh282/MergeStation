@@ -31,6 +31,9 @@ query($login: String!, $after: String) {
 }
 """
 
+MAX_RETRIES = 3
+RETRY_DELAY = 3
+
 
 def load_config():
     with open(CONFIG_PATH) as f:
@@ -38,7 +41,7 @@ def load_config():
 
 
 def fetch_pull_requests(username, token):
-    """Fetch all PRs with cursor-based pagination."""
+    """Fetch all PRs with pagination and retry logic."""
     headers = {"Authorization": f"Bearer {token}"}
     all_prs = []
     cursor = None
@@ -49,12 +52,30 @@ def fetch_pull_requests(username, token):
         if cursor:
             variables["after"] = cursor
 
-        response = requests.post(
-            GRAPHQL_URL,
-            json={"query": QUERY, "variables": variables},
-            headers=headers,
-            timeout=30,
-        )
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = requests.post(
+                    GRAPHQL_URL,
+                    json={"query": QUERY, "variables": variables},
+                    headers=headers,
+                    timeout=30,
+                )
+
+                if response.status_code == 200:
+                    break
+                elif response.status_code == 403:
+                    wait_time = RETRY_DELAY * (2 ** attempt)
+                    print(f"  Rate limited. Waiting {wait_time}s before retry...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"  HTTP {response.status_code}: {response.text}")
+                    time.sleep(RETRY_DELAY)
+            except requests.exceptions.RequestException as e:
+                print(f"  Request error: {e}")
+                time.sleep(RETRY_DELAY)
+        else:
+            print("Max retries exceeded. Stopping fetch.")
+            break
 
         data = response.json()
 
