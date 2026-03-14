@@ -2,7 +2,7 @@
 
 > Automatically tracks open-source pull request contributions across multiple repositories and generates a visual contribution graph.
 
-## 📊 Contribution Graph
+## Contribution Graph
 
 <p align="center">
   <img src="charts/contribution_graph.svg" alt="Contribution Graph" />
@@ -14,7 +14,7 @@
 
 ---
 
-## 🚀 How It Works
+## How It Works
 
 MergeStation uses the **GitHub GraphQL API** to fetch all pull requests created by a user across any repository on GitHub. It then:
 
@@ -48,7 +48,7 @@ MergeStation uses the **GitHub GraphQL API** to fetch all pull requests created 
 
 ---
 
-## 🛠 Setup
+## Setup
 
 ### 1. Clone the Repository
 
@@ -101,7 +101,7 @@ The workflow runs daily at **2:00 AM UTC** and uses the built-in `GITHUB_TOKEN`.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 MergeStation/
@@ -121,17 +121,17 @@ MergeStation/
 
 ---
 
-## 📈 Features
+## Features
 
-- ✅ Full pagination — fetches ALL pull requests, not just the first 100
-- ✅ Retry logic with exponential backoff for rate limiting
-- ✅ Configurable org exclusion list
-- ✅ Hub-and-spoke SVG visualization with GitHub avatars
-- ✅ Automated daily updates via GitHub Actions
-- ✅ Color-coded stats (🟣 Merged, 🟢 Open)
+- Full pagination — fetches ALL pull requests, not just the first 100
+- Retry logic with exponential backoff for rate limiting
+- Configurable org exclusion list
+- Hub-and-spoke SVG visualization with GitHub avatars
+- Automated daily updates via GitHub Actions
+- Color-coded stats (🟣 Merged,🟢 Open)
 
 ---
 
-## 📜 License
+## License
 
 MIT License
