@@ -1,4 +1,3 @@
-# MergeStation - Contribution Graph Generator
 import json
 import math
 import os
