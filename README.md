@@ -12,7 +12,7 @@
   <strong>🟣 Merged</strong> &nbsp;|&nbsp; <strong>🟢 Open</strong>
 </p>
 
----
+
 
 ## How It Works
 
@@ -46,7 +46,7 @@ MergeStation uses the **GitHub GraphQL API** to fetch all pull requests created 
 - **Automation**: GitHub Actions (cron schedule)
 - **Auth**: GitHub Personal Access Token / `GITHUB_TOKEN`
 
----
+
 
 ## Setup
 
@@ -99,7 +99,7 @@ The workflow runs daily at **2:00 AM UTC** and uses the built-in `GITHUB_TOKEN`.
 2. Select **Update Contribution Graph**
 3. Click **Run workflow**
 
----
+
 
 ## Project Structure
 
@@ -119,7 +119,7 @@ MergeStation/
 └── README.md
 ```
 
----
+
 
 ## Features
 
@@ -130,4 +130,4 @@ MergeStation/
 - Automated daily updates via GitHub Actions
 - Color-coded stats (🟣 Merged,🟢 Open)
 
----
+
