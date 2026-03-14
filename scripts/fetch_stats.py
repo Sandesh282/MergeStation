@@ -1,3 +1,4 @@
+# MergeStation - PR Stats Fetcher
 import os
 import sys
 import time
