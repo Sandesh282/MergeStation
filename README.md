@@ -131,7 +131,3 @@ MergeStation/
 - Color-coded stats (🟣 Merged,🟢 Open)
 
 ---
-
-## License
-
-MIT License
