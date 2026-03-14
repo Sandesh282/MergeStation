@@ -8,6 +8,9 @@ import base64
 # MergeStation — Contribution Graph Generator
 # Generates a hub-and-spoke SVG visualization
 # showing PR contributions across organizations.
+#
+# Environment variable overrides:
+#   MAX_ORGS — override config max_orgs
 # ──────────────────────────────────────────────
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config.json")
@@ -24,6 +27,14 @@ def load_config():
     """Load configuration from config.json."""
     with open(CONFIG_PATH) as f:
         return json.load(f)
+
+
+def get_env_override(env_key, config_value, cast_type=str):
+    """Return env var value if set, otherwise fall back to config."""
+    env_val = os.environ.get(env_key)
+    if env_val is not None and env_val != "":
+        return cast_type(env_val)
+    return config_value
 
 
 def fetch_image_as_base64(url):
@@ -52,7 +63,7 @@ def generate_svg():
     config = load_config()
     username = config["username"]
     excluded = config.get("excluded_orgs", [])
-    max_orgs = config.get("max_orgs", 8)
+    max_orgs = get_env_override("MAX_ORGS", config.get("max_orgs", 8), cast_type=int)
     output_dir = config.get("output_dir", "charts")
 
     # 1. Load Data

@@ -2,16 +2,25 @@ name: Update Contribution Graph
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # Daily at 2:00 AM UTC
-  workflow_dispatch:         # Allow manual trigger
+    - cron: "0 2 * * *"       # Daily at 2:00 AM UTC
+  workflow_dispatch:
+    inputs:
+      max_orgs:
+        description: 'Max orgs to display'
+        default: '8'
+        type: string
+      include_closed:
+        description: 'Include closed PRs in chart'
+        default: false
+        type: boolean
 
 permissions:
   contents: write
 
 jobs:
-  update:
+  # ─── Job 1: Fetch PR data from GitHub API ───
+  fetch:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -21,25 +30,72 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Fetch PR stats
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python scripts/fetch_stats.py
+          MAX_ORGS: ${{ inputs.max_orgs || '8' }}
+          INCLUDE_CLOSED: ${{ inputs.include_closed || 'false' }}
+        run: python scripts/fetch_stats.py
+
+      - name: Upload PR data
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-data
+          path: charts/data.json
+
+  # ─── Job 2: Generate chart and commit results ───
+  generate:
+    needs: fetch
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download PR data
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-data
+          path: charts/
 
       - name: Generate contribution graph
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_ORGS: ${{ inputs.max_orgs || '8' }}
+        run: python scripts/generate_chart.py
+
+      - name: Check for changes
+        id: diff
         run: |
-          python scripts/generate_chart.py
+          if git diff --quiet charts/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected — skipping commit"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected — will commit"
+          fi
 
       - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add charts/
-          git diff --cached --quiet || git commit -m "Update contribution graph [automated]"
+          git commit -m "Update contribution graph [automated]"
           git push
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.diff.outputs.changed }}" == "true" ]; then
+            echo "### ✅ Contribution graph updated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⏭️ No changes — graph is up to date" >> $GITHUB_STEP_SUMMARY
+          fi

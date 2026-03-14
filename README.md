@@ -12,7 +12,7 @@
   <strong>🟣 Merged</strong> &nbsp;|&nbsp; <strong>🟢 Open</strong>
 </p>
 
-
+---
 
 ## How It Works
 
@@ -25,17 +25,26 @@ MergeStation uses the **GitHub GraphQL API** to fetch all pull requests created 
 
 ### Architecture
 
+The workflow is split into two jobs with artifact passing:
+
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────┐
-│   GitHub API     │────▶│  fetch_stats.py  │────▶│   charts/data.json  │
-│   (GraphQL)      │     │  (Data Fetcher)  │     │   (PR Statistics)   │
-└─────────────────┘     └──────────────────┘     └─────────┬───────────┘
-                                                           │
-                                                           ▼
-                        ┌──────────────────┐     ┌─────────────────────────┐
-                        │ generate_chart.py│────▶│ charts/contribution_    │
-                        │ (SVG Generator)  │     │         graph.svg       │
-                        └──────────────────┘     └─────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                    GitHub Actions Workflow                        │
+│                                                                  │
+│  ┌─────────────┐    artifact     ┌──────────────────┐            │
+│  │  fetch job   │───(data.json)──▶│  generate job    │            │
+│  │              │                │  (env: production)│            │
+│  └─────────────┘                └──────────────────┘            │
+│                                         │                        │
+│                                    conditional                   │
+│                                      commit                     │
+└──────────────────────────────────────────────────────────────────┘
+         │                                        │
+         ▼                                        ▼
+  ┌─────────────┐                    ┌─────────────────────────┐
+  │  GitHub API  │                    │ charts/contribution_    │
+  │  (GraphQL)   │                    │         graph.svg       │
+  └─────────────┘                    └─────────────────────────┘
 ```
 
 ### Tech Stack
@@ -43,10 +52,53 @@ MergeStation uses the **GitHub GraphQL API** to fetch all pull requests created 
 - **Language**: Python 3.11
 - **API**: GitHub GraphQL API v4
 - **Visualization**: SVG (generated programmatically)
-- **Automation**: GitHub Actions (cron schedule)
-- **Auth**: GitHub Personal Access Token / `GITHUB_TOKEN`
+- **Automation**: GitHub Actions (cron + manual dispatch)
+- **Auth**: `GITHUB_TOKEN` (built-in)
 
+---
 
+## Workflows
+
+### Update Contribution Graph (`update.yml`)
+
+The main workflow that fetches PR data and generates the contribution graph.
+
+**Triggers:**
+- Daily cron schedule at 2:00 AM UTC
+- Manual dispatch with configurable inputs
+
+**Workflow Dispatch Inputs:**
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `max_orgs` | string | `8` | Maximum number of organizations to display |
+| `include_closed` | boolean | `false` | Include closed PRs in the chart |
+
+These inputs are passed as environment variables (`MAX_ORGS`, `INCLUDE_CLOSED`) to the Python scripts, which fall back to `config.json` values when not set (so the cron trigger works without inputs).
+
+**Two-Job Architecture:**
+
+1. **`fetch` job** — Fetches PR data from GitHub GraphQL API, uploads `data.json` as an artifact
+2. **`generate` job** — Downloads the artifact, generates the SVG chart, conditionally commits only if changes are detected
+
+The `generate` job uses `environment: production`, demonstrating understanding of GitHub environment protections used in release pipelines.
+
+**Conditional Commit Logic:**
+
+The workflow detects whether the chart actually changed before committing:
+- If changes are detected → commits and pushes
+- If no changes → skips the commit and reports in the job summary
+
+### Validate Configuration (`validate.yml`)
+
+A validation workflow that runs on pull requests touching `config.json` or `scripts/`.
+
+**Steps:**
+1. Validates `config.json` schema — checks all required fields exist with correct types
+2. Checks Python syntax — compiles both scripts to catch syntax errors
+3. Dry-run API test — fetches 1 page of PR data to verify the API connection works, without writing `data.json`
+
+---
 
 ## Setup
 
@@ -83,6 +135,8 @@ Edit `config.json` to customize:
 | `max_orgs` | Maximum number of orgs to display |
 | `output_dir` | Directory for output files |
 
+Environment variables `MAX_ORGS` and `INCLUDE_CLOSED` can override config values at runtime.
+
 ### 4. Run Locally
 
 ```bash
@@ -98,20 +152,22 @@ The workflow runs daily at **2:00 AM UTC** and uses the built-in `GITHUB_TOKEN`.
 1. Go to **Actions** tab in your repository
 2. Select **Update Contribution Graph**
 3. Click **Run workflow**
+4. Optionally configure `max_orgs` and `include_closed` inputs
 
-
+---
 
 ## Project Structure
 
 ```
 MergeStation/
 ├── .github/workflows/
-│   └── update.yml              # Automated daily workflow
+│   ├── update.yml              # Main workflow (fetch → generate → commit)
+│   └── validate.yml            # PR validation (config + syntax + dry-run)
 ├── charts/
 │   ├── data.json               # PR statistics (auto-generated)
 │   └── contribution_graph.svg  # Visualization (auto-generated)
 ├── scripts/
-│   ├── fetch_stats.py          # Data collection script
+│   ├── fetch_stats.py          # Data collection (pagination + retry + dry-run)
 │   └── generate_chart.py       # SVG generation script
 ├── config.json                 # Project configuration
 ├── requirements.txt            # Python dependencies
@@ -119,7 +175,7 @@ MergeStation/
 └── README.md
 ```
 
-
+---
 
 ## Features
 
@@ -127,7 +183,15 @@ MergeStation/
 - Retry logic with exponential backoff for rate limiting
 - Configurable org exclusion list
 - Hub-and-spoke SVG visualization with GitHub avatars
-- Automated daily updates via GitHub Actions
+- Two-job workflow architecture with artifact passing
+- Workflow dispatch inputs with env var overrides
+- Conditional commits — only pushes when chart actually changes
+- PR validation workflow with config schema checks and dry-run mode
+- Environment protection on the generate job
 - Color-coded stats (🟣 Merged,🟢 Open)
 
+---
 
+## License
+
+MIT License

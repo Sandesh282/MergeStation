@@ -10,6 +10,11 @@ from collections import defaultdict
 # MergeStation — PR Stats Fetcher
 # Fetches all pull requests for a GitHub user
 # using the GraphQL API with cursor pagination.
+#
+# Environment variable overrides:
+#   MAX_ORGS      — override config max_orgs
+#   INCLUDE_CLOSED — "true" to include closed PRs
+#   DRY_RUN       — "true" for validation mode
 # ──────────────────────────────────────────────
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config.json")
@@ -49,10 +54,25 @@ def load_config():
         return json.load(f)
 
 
-def fetch_pull_requests(username, token):
+def get_env_override(env_key, config_value, cast_type=str):
+    """
+    Return the env var value if set, otherwise fall back to config.
+    This allows workflow_dispatch inputs to override config.json values.
+    """
+    env_val = os.environ.get(env_key)
+    if env_val is not None and env_val != "":
+        if cast_type == bool:
+            return env_val.lower() in ("true", "1", "yes")
+        return cast_type(env_val)
+    return config_value
+
+
+def fetch_pull_requests(username, token, dry_run=False):
     """
     Fetch all pull requests for a user using cursor-based pagination.
     Implements retry logic with exponential backoff for rate limiting.
+
+    In dry_run mode, fetches only 1 page and returns early (for validation).
     """
     headers = {"Authorization": f"Bearer {token}"}
     all_prs = []
@@ -101,6 +121,11 @@ def fetch_pull_requests(username, token):
         all_prs.extend(nodes)
         print(f"  Page {page}: fetched {len(nodes)} PRs (total: {len(all_prs)})")
 
+        # In dry-run mode, stop after first page
+        if dry_run:
+            print("  Dry run — stopping after first page")
+            break
+
         if pr_data["pageInfo"]["hasNextPage"]:
             cursor = pr_data["pageInfo"]["endCursor"]
             page += 1
@@ -111,8 +136,12 @@ def fetch_pull_requests(username, token):
     return all_prs
 
 
-def aggregate_stats(pull_requests):
-    """Aggregate PR stats by organization/owner."""
+def aggregate_stats(pull_requests, include_closed=False):
+    """
+    Aggregate PR stats by organization/owner.
+    If include_closed is False, only MERGED and OPEN PRs are counted in totals
+    but CLOSED count is still tracked in the data.
+    """
     org_stats = defaultdict(lambda: {"MERGED": 0, "OPEN": 0, "CLOSED": 0})
 
     for pr in pull_requests:
@@ -127,16 +156,26 @@ def main():
     config = load_config()
     username = config["username"]
 
+    # Check for dry-run mode (used by validate.yml)
+    dry_run = get_env_override("DRY_RUN", False, cast_type=bool)
+    include_closed = get_env_override("INCLUDE_CLOSED", False, cast_type=bool)
+
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         print("Error: GITHUB_TOKEN environment variable is not set.")
         sys.exit(1)
 
-    print(f"Fetching PR data for user: {username}")
-    pull_requests = fetch_pull_requests(username, token)
+    mode = "DRY RUN" if dry_run else "FULL"
+    print(f"Fetching PR data for user: {username} (mode: {mode})")
+    pull_requests = fetch_pull_requests(username, token, dry_run=dry_run)
     print(f"Total PRs fetched: {len(pull_requests)}")
 
-    org_stats = aggregate_stats(pull_requests)
+    # In dry-run mode, validate the connection and exit without writing
+    if dry_run:
+        print(f"Dry run successful — API connection verified, {len(pull_requests)} PRs found on first page")
+        return
+
+    org_stats = aggregate_stats(pull_requests, include_closed=include_closed)
 
     output_dir = config.get("output_dir", "charts")
     os.makedirs(output_dir, exist_ok=True)

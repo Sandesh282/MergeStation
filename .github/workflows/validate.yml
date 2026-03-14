@@ -1,0 +1,47 @@
+name: Validate Configuration
+
+on:
+  pull_request:
+    paths:
+      - 'config.json'
+      - 'scripts/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate config.json schema
+        run: |
+          python3 -c "
+          import json, sys
+          with open('config.json') as f:
+              config = json.load(f)
+          required = ['username', 'excluded_orgs', 'max_orgs', 'output_dir']
+          missing = [k for k in required if k not in config]
+          if missing:
+              print(f'Missing required fields: {missing}')
+              sys.exit(1)
+          if not isinstance(config['excluded_orgs'], list):
+              print('excluded_orgs must be a list')
+              sys.exit(1)
+          if not isinstance(config['max_orgs'], int) or config['max_orgs'] < 1:
+              print('max_orgs must be a positive integer')
+              sys.exit(1)
+          print('config.json is valid')
+          "
+
+      - name: Check Python syntax
+        run: |
+          python3 -m py_compile scripts/fetch_stats.py
+          python3 -m py_compile scripts/generate_chart.py
+          echo "Python syntax check passed"
+
+      - name: Dry-run API connection
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: "true"
+        run: |
+          pip install -r requirements.txt
+          python scripts/fetch_stats.py
