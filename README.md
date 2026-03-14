@@ -27,24 +27,12 @@ MergeStation uses the **GitHub GraphQL API** to fetch all pull requests created 
 
 The workflow is split into two jobs with artifact passing:
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                    GitHub Actions Workflow                        │
-│                                                                  │
-│  ┌─────────────┐    artifact     ┌──────────────────┐            │
-│  │  fetch job   │───(data.json)──▶│  generate job    │            │
-│  │              │                │  (env: production)│            │
-│  └─────────────┘                └──────────────────┘            │
-│                                         │                        │
-│                                    conditional                   │
-│                                      commit                     │
-└──────────────────────────────────────────────────────────────────┘
-         │                                        │
-         ▼                                        ▼
-  ┌─────────────┐                    ┌─────────────────────────┐
-  │  GitHub API  │                    │ charts/contribution_    │
-  │  (GraphQL)   │                    │         graph.svg       │
-  └─────────────┘                    └─────────────────────────┘
+```mermaid
+flowchart LR
+    A["GitHub API (GraphQL)"] -->|fetch| B["fetch job"]
+    B -->|upload artifact| C["data.json"]
+    C -->|download artifact| D["generate job (env: production)"]
+    D -->|conditional commit| E["contribution_graph.svg"]
 ```
 
 ### Tech Stack
@@ -189,9 +177,3 @@ MergeStation/
 - PR validation workflow with config schema checks and dry-run mode
 - Environment protection on the generate job
 - Color-coded stats (🟣 Merged,🟢 Open)
-
----
-
-## License
-
-MIT License
