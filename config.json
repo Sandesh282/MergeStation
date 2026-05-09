@@ -1,6 +1,6 @@
 {
   "username": "Sandesh282",
   "excluded_orgs": ["Sandesh282", "firstcontributions"],
-  "max_orgs": 8,
+  "max_orgs": 6,
   "output_dir": "charts"
 }

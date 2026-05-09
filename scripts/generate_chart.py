@@ -71,7 +71,7 @@ def generate_svg():
     with open(data_path) as f:
         data = json.load(f)
 
-    # 2. Filter & Sort — only include orgs with merged or open PRs
+    # 2. Filter & Sort — only include orgs with merged or open PRs, sorted by most recent activity
     active_orgs = {
         k: v for k, v in data.items()
         if k not in excluded
@@ -80,7 +80,7 @@ def generate_svg():
 
     sorted_orgs = sorted(
         active_orgs.keys(),
-        key=lambda x: (active_orgs[x]["MERGED"], active_orgs[x]["OPEN"]),
+        key=lambda x: active_orgs[x].get("latest", ""),
         reverse=True,
     )[:max_orgs]
 

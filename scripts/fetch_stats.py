@@ -139,15 +139,19 @@ def fetch_pull_requests(username, token, dry_run=False):
 def aggregate_stats(pull_requests, include_closed=False):
     """
     Aggregate PR stats by organization/owner.
-    If include_closed is False, only MERGED and OPEN PRs are counted in totals
-    but CLOSED count is still tracked in the data.
+    Tracks the latest PR date per org for recency-based sorting.
     """
-    org_stats = defaultdict(lambda: {"MERGED": 0, "OPEN": 0, "CLOSED": 0})
+    org_stats = defaultdict(lambda: {"MERGED": 0, "OPEN": 0, "CLOSED": 0, "latest": ""})
 
     for pr in pull_requests:
         org = pr["repository"]["owner"]["login"]
         state = pr["state"]
         org_stats[org][state] += 1
+
+        # Track the most recent PR date per org
+        created = pr.get("createdAt", "")
+        if created > org_stats[org]["latest"]:
+            org_stats[org]["latest"] = created
 
     return dict(org_stats)
 
@@ -186,8 +190,8 @@ def main():
 
     print(f"Stats saved to {output_path}")
     print("Organization stats:")
-    for org, stats in sorted(org_stats.items(), key=lambda x: sum(x[1].values()), reverse=True):
-        total = sum(stats.values())
+    for org, stats in sorted(org_stats.items(), key=lambda x: x[1]["MERGED"] + x[1]["OPEN"] + x[1]["CLOSED"], reverse=True):
+        total = stats["MERGED"] + stats["OPEN"] + stats["CLOSED"]
         print(f"  {org}: {total} PRs (Merged: {stats['MERGED']}, Open: {stats['OPEN']}, Closed: {stats['CLOSED']})")
 
 
