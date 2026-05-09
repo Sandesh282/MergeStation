@@ -1,4 +1,9 @@
 {
+  "NixOS": {
+    "MERGED": 0,
+    "OPEN": 1,
+    "CLOSED": 0
+  },
   "oppia": {
     "MERGED": 8,
     "OPEN": 1,
