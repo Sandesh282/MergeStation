@@ -1,72 +1,86 @@
 {
   "NixOS": {
-    "MERGED": 0,
+    "MERGED": 1,
     "OPEN": 1,
-    "CLOSED": 0
+    "CLOSED": 0,
+    "latest": "2026-05-09T17:31:22Z"
   },
   "oppia": {
     "MERGED": 8,
     "OPEN": 1,
-    "CLOSED": 5
+    "CLOSED": 5,
+    "latest": "2026-04-17T19:21:24Z"
   },
   "ankidroid": {
     "MERGED": 0,
     "OPEN": 0,
-    "CLOSED": 3
+    "CLOSED": 3,
+    "latest": "2026-01-25T18:44:32Z"
   },
   "Sandesh282": {
     "MERGED": 1,
     "OPEN": 0,
-    "CLOSED": 1
+    "CLOSED": 1,
+    "latest": "2025-12-27T11:44:54Z"
   },
   "sakina1303": {
     "MERGED": 3,
     "OPEN": 0,
-    "CLOSED": 0
+    "CLOSED": 0,
+    "latest": "2025-10-27T17:40:59Z"
   },
   "recodehive": {
     "MERGED": 2,
     "OPEN": 0,
-    "CLOSED": 1
+    "CLOSED": 1,
+    "latest": "2025-10-26T16:32:51Z"
   },
   "HarshitPachori": {
     "MERGED": 1,
     "OPEN": 0,
-    "CLOSED": 2
+    "CLOSED": 2,
+    "latest": "2025-10-26T10:58:55Z"
   },
   "bugOpsX": {
     "MERGED": 1,
     "OPEN": 0,
-    "CLOSED": 2
+    "CLOSED": 2,
+    "latest": "2025-10-26T10:07:17Z"
   },
   "thetsajeet": {
     "MERGED": 0,
     "OPEN": 0,
-    "CLOSED": 1
+    "CLOSED": 1,
+    "latest": "2025-10-26T09:22:32Z"
   },
   "kishanBhandary": {
     "MERGED": 3,
     "OPEN": 0,
-    "CLOSED": 0
+    "CLOSED": 0,
+    "latest": "2025-10-25T17:37:11Z"
   },
   "iiitl": {
     "MERGED": 0,
     "OPEN": 0,
-    "CLOSED": 1
+    "CLOSED": 1,
+    "latest": "2025-03-30T09:02:45Z"
   },
   "In-Saiyan": {
     "MERGED": 2,
     "OPEN": 0,
-    "CLOSED": 0
+    "CLOSED": 0,
+    "latest": "2025-02-15T17:53:11Z"
   },
   "codxbrexx": {
     "MERGED": 1,
     "OPEN": 0,
-    "CLOSED": 0
+    "CLOSED": 0,
+    "latest": "2024-10-12T06:06:01Z"
   },
   "MrImmortal09": {
     "MERGED": 0,
     "OPEN": 1,
-    "CLOSED": 0
+    "CLOSED": 0,
+    "latest": "2024-10-03T13:41:34Z"
   }
 }
