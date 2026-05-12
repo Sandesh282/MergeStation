@@ -1,9 +1,9 @@
 {
   "NixOS": {
     "MERGED": 1,
-    "OPEN": 0,
+    "OPEN": 1,
     "CLOSED": 1,
-    "latest": "2026-05-09T17:31:22Z"
+    "latest": "2026-05-11T19:08:14Z"
   },
   "oppia": {
     "MERGED": 8,
