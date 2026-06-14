@@ -1,13 +1,13 @@
 {
   "oppia": {
     "MERGED": 10,
-    "OPEN": 4,
+    "OPEN": 5,
     "CLOSED": 6,
-    "latest": "2026-06-09T19:36:08Z"
+    "latest": "2026-06-13T15:48:39Z"
   },
   "NixOS": {
-    "MERGED": 2,
-    "OPEN": 1,
+    "MERGED": 3,
+    "OPEN": 0,
     "CLOSED": 1,
     "latest": "2026-05-29T10:54:37Z"
   },
