@@ -1,9 +1,9 @@
 {
   "oppia": {
     "MERGED": 17,
-    "OPEN": 0,
+    "OPEN": 1,
     "CLOSED": 8,
-    "latest": "2026-07-03T19:34:57Z"
+    "latest": "2026-07-07T22:32:12Z"
   },
   "NixOS": {
     "MERGED": 3,
