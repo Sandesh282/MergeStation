@@ -1,9 +1,15 @@
 {
+  "Sandesh282": {
+    "MERGED": 3,
+    "OPEN": 0,
+    "CLOSED": 1,
+    "latest": "2026-08-01T10:19:28Z"
+  },
   "oppia": {
     "MERGED": 27,
     "OPEN": 5,
-    "CLOSED": 10,
-    "latest": "2026-07-30T11:44:15Z"
+    "CLOSED": 11,
+    "latest": "2026-08-01T10:10:59Z"
   },
   "NixOS": {
     "MERGED": 3,
@@ -16,12 +22,6 @@
     "OPEN": 0,
     "CLOSED": 3,
     "latest": "2026-01-25T18:44:32Z"
-  },
-  "Sandesh282": {
-    "MERGED": 1,
-    "OPEN": 0,
-    "CLOSED": 1,
-    "latest": "2025-12-27T11:44:54Z"
   },
   "sakina1303": {
     "MERGED": 3,
